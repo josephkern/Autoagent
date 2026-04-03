@@ -40,11 +40,11 @@ tests/            — Test suite
 
 `agent.py` has two zones separated by a `FIXED ADAPTER BOUNDARY` comment:
 
-1. **Editable zone** (lines 25–72): `SYSTEM_PROMPT`, `MODEL`, `MAX_TURNS`,
+1. **Editable zone** (lines 25–73): `SYSTEM_PROMPT`, `MODEL`, `MAX_TURNS`,
    `create_tools()`, `create_agent()`, `run_task()` — the meta-agent modifies
    these to improve performance.
-2. **Fixed zone** (lines 76+): `to_atif()` — ATIF trajectory serialization.
-   Infrastructure that must not change unless a human asks.
+2. **Fixed zone** (line 75+): `to_atif()` — ATIF trajectory serialization
+   (195 total lines). Infrastructure that must not change unless a human asks.
 
 ### Editable Zone API
 
@@ -59,9 +59,26 @@ tests/            — Test suite
 
 ### Fixed Zone API
 
-| Symbol | Purpose |
-|---|---|
-| `to_atif(result, model, duration_ms)` | Converts `RunResult` to ATIF-v1.6 trajectory dict |
+| Symbol | Signature | Purpose |
+|---|---|---|
+| `to_atif` | `(result: object, model: str, duration_ms: int = 0) -> dict` | Converts `RunResult` to ATIF-v1.6 trajectory dict |
+
+### Tools (runtime-discovered)
+
+| Tool | Parameters | Description |
+|---|---|---|
+| `run_shell` | `{"command": str}` (required) | Run a shell command in the task environment. Returns stdout and stderr. |
+
+### ATIF Output Schema (runtime-verified)
+
+```
+top-level keys : schema_version, session_id, agent, steps, final_metrics
+agent keys     : name, version, model_name
+metrics keys   : total_prompt_tokens, total_completion_tokens, total_cached_tokens,
+                 total_cost_usd, total_steps, extra
+step keys      : step_id, timestamp, source, message
+                 (+ optional: model_name, tool_calls, observation, reasoning_content)
+```
 
 ### Exports
 
