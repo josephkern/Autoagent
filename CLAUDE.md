@@ -43,11 +43,11 @@ tests/            — Test suite (15 tests)
 `agent.py` has two zones separated by a `FIXED ADAPTER BOUNDARY` comment at
 line 75:
 
-1. **Editable zone** (line 26–73, marked `EDITABLE HARNESS`):
+1. **Editable zone** (line 26–73, 35 code lines, marked `EDITABLE HARNESS`):
    `SYSTEM_PROMPT`, `MODEL`, `MAX_TURNS`, `create_tools()`, `create_agent()`,
    `run_task()` — the meta-agent modifies these to improve performance.
-2. **Fixed zone** (line 75–195): `to_atif()` — ATIF trajectory serialization.
-   Infrastructure that must not change unless a human asks.
+2. **Fixed zone** (line 75–195, 108 code lines): `to_atif()` — ATIF trajectory
+   serialization. Infrastructure that must not change unless a human asks.
 
 ### Imports
 
@@ -65,18 +65,20 @@ from agents.usage import Usage
 
 | Symbol | Signature | Default | Purpose |
 |---|---|---|---|
-| `SYSTEM_PROMPT` | `str` | `"You are an agent that executes tasks"` | Agent system instructions |
-| `MODEL` | `str` | `"gpt-5"` | Model identifier (do not change without human approval) |
-| `MAX_TURNS` | `int` | `30` | Maximum agent turns per task |
-| `create_tools` | `(environment) -> list[FunctionTool]` | Returns `[run_shell]` | Build the tool list; add new tools here |
-| `create_agent` | `(environment) -> Agent` | Returns `Agent(name="autoagent", ...)` | Construct the agent with tools, handoffs, sub-agents |
-| `run_task` | `async (environment, instruction: str) -> tuple[object, int]` | Calls `Runner.run()` | Orchestration entry point; returns `(result, duration_ms)` |
+| Symbol | Signature | Lines | Purpose |
+|---|---|---|---|
+| `SYSTEM_PROMPT` | `str` | 29 | Agent system instructions (`"You are an agent that executes tasks"`) |
+| `MODEL` | `str` | 30 | Model identifier (`"gpt-5"`, do not change without human approval) |
+| `MAX_TURNS` | `int` | 31 | Maximum agent turns per task (`30`) |
+| `create_tools` | `(environment) -> list[FunctionTool]` | 34–51 | Build the tool list; add new tools here |
+| `create_agent` | `(environment) -> Agent` | 54–62 | Construct the agent with tools, handoffs, sub-agents |
+| `run_task` | `async (environment, instruction: str) -> tuple[object, int]` | 65–71 | Orchestration entry point; returns `(result, duration_ms)` |
 
 ### Fixed Zone API
 
-| Symbol | Signature | Purpose |
-|---|---|---|
-| `to_atif` | `(result: object, model: str, duration_ms: int = 0) -> dict` | Converts `RunResult` to ATIF-v1.6 trajectory dict |
+| Symbol | Signature | Lines | Purpose |
+|---|---|---|---|
+| `to_atif` | `(result: object, model: str, duration_ms: int = 0) -> dict` | 80–192 | Converts `RunResult` to ATIF-v1.6 trajectory dict |
 
 ### Tools (runtime-discovered)
 
@@ -92,6 +94,7 @@ model        = "gpt-5"
 instructions = "You are an agent that executes tasks"
 num_tools    = 1
 tool_names   = ["run_shell"]
+handoffs     = []
 ```
 
 ### ATIF Output Schema (runtime-verified)
@@ -198,7 +201,9 @@ See `program.md` for the full experiment loop protocol. The short version:
 | `pandas` | `>=2.2` | `3.0.2` |
 | `openpyxl` | `>=3.1` | `3.1.5` |
 | `numpy` | `>=2.0` | `2.4.4` |
-| `pytest` | `>=8.0` | dev |
-| `pytest-asyncio` | `>=0.24` | dev |
-| `pytest-cov` | `>=5.0` | dev |
-| `ruff` | `>=0.4` | dev |
+| `pytest` | `>=8.0` | `9.0.2` |
+| `pytest-asyncio` | `>=0.24` | `1.3.0` |
+| `pytest-cov` | `>=5.0` | `7.1.0` |
+| `ruff` | `>=0.4` | `0.15.9` |
+
+**Python**: `3.12.3`
